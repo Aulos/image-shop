@@ -1,0 +1,46 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<polymer-element name="my-image" attributes="image" layout vertical justified>
+<template>
+<style>
+:host {
+    display:inline-block;
+    height: 250px;
+    position: relative;
+}
+div {
+    position:relative;
+    padding: 5px;
+    top: -40px;
+    height: 30px;
+    background-color: rgba(0, 0, 0, .8);
+    color:white;
+    line-height: 30px;
+}
+
+core-icon-button#add {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 40px;
+    background-color: rgba(0,0,0,.8);
+    color: white;
+}
+img {
+    height: 100%;
+}
+</style>
+<img src="{{image.url}}" flex/>
+<div center>{{image.name}}</div>
+<core-icon-button id="add" icon="add-shopping-cart" on-tap="{{add}}"></core-icon-button>
+</template>
+
+<script>
+    Polymer('my-image', {
+        add: function(ev) {
+            ev.stopPropagation();
+            this.fire('add');
+        }
+    });
+</script>
+</polymer-element>

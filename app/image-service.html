@@ -1,0 +1,49 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/core-ajax/core-ajax.html">
+<link rel="import" href="../bower_components/polymer-jsonp/polymer-jsonp.html">
+
+<polymer-element name="image-service" attributes="images" hidden>
+<template>
+    <polymer-jsonp id="ajax"
+        auto
+        url="https://en.wikipedia.org/w/api.php?action=query&list=allimages&ailimit=50&aiprop=mime|url&format=json&callback="
+        on-polymer-response="{{imagesLoaded}}"
+        on-polymer-error="{{requestError}}"
+    >
+    </polymer-jsonp>
+    <!--core-ajax id="ajax" 
+        auto 
+        url="https://en.wikipedia.org/w/api.php?action=query&list=allimages&ailimit=50&format=json"
+        headers='{"X-User-Agent": "ScalacImageViewer/1.0"}'
+        on-core-response="{{imagesLoaded}}"
+        on-core-error="{{requestError}}"
+        handleAs="json">
+    </core-ajax-->
+</template>
+<script>
+    Polymer({
+        created: function() {
+            this.images = [];
+            console.log('Service created');
+        },
+        ready: function() {
+            this.$.ajax.xhrArgs = {
+                sync: false
+            };
+        },
+        imagesLoaded: function() {
+            // .slice(0) gives me a copy
+            if(this.$.ajax.response && this.$.ajax.response.query && this.$.ajax.response.query.allimages) {
+                this.images = this.$.ajax.response.query.allimages.slice(0);
+            }
+        },
+        requestError: function() {
+            console.error('Got error:' + this.$.ajax.error);
+        },
+        reload: function() {
+            this.$.ajax.go();
+        }
+    });
+</script>
+
+</polymer-element>

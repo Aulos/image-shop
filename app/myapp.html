@@ -1,0 +1,88 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/core-header-panel/core-header-panel.html">
+<link rel="import" href="../bower_components/core-toolbar/core-toolbar.html">
+<link rel="import" href="../bower_components/core-icon-button/core-icon-button.html">
+<link rel="import" href="../bower_components/core-tooltip/core-tooltip.html">
+<link rel="import" href="../bower_components/core-localstorage/core-localstorage.html">
+<link rel="import" href="../bower_components/core-pages/core-pages.html">
+<link rel="import" href="image-service.html">
+<link rel="import" href="my-image.html">
+<link rel="import" href="my-basket.html">
+<link rel="import" href="my-details.html">
+
+<script src="../bower_components/underscore/underscore.js"></script>
+
+<polymer-element name="my-app">
+<template>
+    <link rel="stylesheet" href="myapp.css">
+
+    <core-localstorage name="myapp-basket" value="{{basket}}"></core-localstorage>
+
+    <image-service id="service" images="{{images}}"></image-service>
+
+    <core-header-panel>
+    <core-toolbar>
+        <div flex>Scalac Image Viewer</div>
+        <input type="text" value="{{filterText}}" placeholder="Filter images"/>
+        <core-tooltip label="Refresh">
+            <core-icon-button icon="refresh" on-tap="{{refreshImages}}"></core-icon-button>
+        </core-tooltip>
+        <core-tooltip>
+            <core-icon-button icon="shopping-basket" on-tap="{{showBasket}}"></core-icon-button>
+            <ul tip>
+                <template repeat="{{image in basket}}">
+                <li><img src="{{image.url}}" style="max-height: 40px; max-width: 40px;"/></li>
+                </template>
+            </ul>
+        </core-tooltip>
+    </core-toolbar>
+
+    <core-pages id="pages" valueattr="id" selected="imagesList">
+        <div id="imagesList" layout horizontal wrap>
+            <template repeat="{{image in images | filterImages | filterName(filterText) }}">
+                <my-image image="{{image}}" on-tap="{{showDetails}}" on-add="{{addToBasket}}"> </my-image>
+            </template>
+        </div>
+        <my-details id="imageDetails" image="{{currentImage}}"></my-details>
+        <my-basket id="basket"></my-basket>
+    </core-pages>
+
+    </core-header-panel>
+</template>
+
+<script>
+    Polymer('my-app', {
+        ready: function() {
+            if(this.basket == null) {
+                this.basket = [];
+            }
+        },
+        showBasket: function() { 
+            console.log("Show basket"); 
+            this.$.pages.selected = 'basket';
+        },
+        filterImages: function(images) {
+            return _.where(images, {'mime': 'image/jpeg'});
+        },
+        filterName: function(images, name) {
+            if(name == null || name == "")
+                return images
+            name = name.toLowerCase();
+            return _.filter(images, function(val) { return val.name.toLowerCase().indexOf(name) > -1; });
+        },
+        showDetails: function(ev, d, sender) {
+            var image = sender.templateInstance.model.image;
+            this.currentImage = image;
+            this.$.pages.selected = 'imageDetails';
+        },
+        refreshImages: function() {
+            this.$.service.reload();
+        },
+        addToBasket: function(ev, d, sender) {
+            var image = sender.templateInstance.model.image;
+            this.basket.push(image);            
+        }
+    });
+</script>
+
+</polymer-element>
