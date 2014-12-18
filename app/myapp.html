@@ -4,7 +4,7 @@
 <link rel="import" href="../bower_components/core-icon-button/core-icon-button.html">
 <link rel="import" href="../bower_components/core-tooltip/core-tooltip.html">
 <link rel="import" href="../bower_components/core-localstorage/core-localstorage.html">
-<link rel="import" href="../bower_components/core-pages/core-pages.html">
+<link rel="import" href="../bower_components/core-animated-pages/core-animated-pages.html">
 <link rel="import" href="image-service.html">
 <link rel="import" href="my-image.html">
 <link rel="import" href="my-basket.html">
@@ -20,38 +20,61 @@
 
     <image-service id="service" images="{{images}}"></image-service>
 
-    <core-header-panel>
-    <core-toolbar>
-        <div flex>Scalac Image Viewer</div>
-        <input type="text" value="{{filterText}}" placeholder="Filter images"/>
-        <core-tooltip label="Refresh">
-            <core-icon-button icon="refresh" on-tap="{{refreshImages}}"></core-icon-button>
-        </core-tooltip>
-        <core-tooltip>
-            <core-icon-button icon="shopping-basket" on-tap="{{showBasket}}"></core-icon-button>
-            <ul tip>
-                <template repeat="{{image in basket}}">
-                <li><img src="{{image.url}}" style="max-height: 40px; max-width: 40px;"/></li>
-                </template>
-            </ul>
-        </core-tooltip>
-    </core-toolbar>
+    <div vertical layout>
+        <core-toolbar>
+            <div flex>Scalac Image Viewer</div>
+            <input type="text" value="{{filterText}}" placeholder="Filter images"/>
+            <core-tooltip label="Refresh">
+                <core-icon-button icon="refresh" on-tap="{{refreshImages}}"></core-icon-button>
+            </core-tooltip>
+            <core-tooltip>
+                <core-icon-button icon="shopping-basket" on-tap="{{showBasket}}"></core-icon-button>
+                <ul tip>
+                    <template repeat="{{image in basket}}">
+                    <li><img src="{{image.url}}" style="max-height: 40px; max-width: 40px;"/></li>
+                    </template>
+                </ul>
+            </core-tooltip>
+        </core-toolbar>
 
-    <core-pages id="pages" valueattr="id" selected="imagesList">
-        <div id="imagesList" layout horizontal wrap>
-            <template repeat="{{image in images | filterImages | filterName(filterText) }}">
-                <my-image image="{{image}}" on-tap="{{showDetails}}" on-add="{{addToBasket}}"> </my-image>
-            </template>
-        </div>
-        <my-details id="imageDetails" image="{{currentImage}}"></my-details>
-        <my-basket id="basket"></my-basket>
-    </core-pages>
+        <core-animated-pages id="pages" valueattr="id" selected="{{page}}" flex transitions="hero-transition" on-core-animated-pages-transition-end="{{transComplete}}" layout vertical>
+            <section id="imagesList" flex> 
+                <div class="images-container" layout horizontal wrap>
+                    <template repeat="{{image in images | filterImages | filterName(filterText) }}">
+                    <div class="chip" on-tap="{{showDetails}}" on-add="{{addToBasket}}" layout vertical hero-id="{{image.url}}" hero?="{{currentImage === image}}"> 
+                            <img class="art" flex src="{{image.url}}" hero-id="{{image.url}}.art" hero?="{{currentImage === image}}"/>
+                            <div class="caption">{{image.name}}</div>
+                            <core-icon-button class="addToBasket" icon="add-shopping-cart" on-tap="{{addToBasket}}"></core-icon-button>
+                        </div>
+                    </template>
+                </div>
+            </section>
 
-    </core-header-panel>
+            <section id="imageDetails">
+                <div class="card" layout horizontal flex hero hero-id="{{currentImage.url}}">
+                    <img src="{{currentImage.url}}" hero hero-id="{{currentImage.url}}.art" class="art"/>
+                    <div layout vertical>
+                        <h1 hero hero-id="{{currentImage.url}}.caption">{{currentImage.name}}</h1>
+                        <p flex>Some details</p>
+                        <div layout horizontal>
+                            <core-icon-button id="add" icon="add-shopping-cart" on-tap="{{addToBasket}}">Add to basket</core-icon-button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section id="basket"> 
+                <div>
+                    <h1 hero hero-id="caption">Basket</h1>
+                    <my-basket></my-basket>
+                </div>
+            </section>
+        </core-animated-pages>
+    </div>
 </template>
 
 <script>
     Polymer('my-app', {
+        page: "imagesList",
         ready: function() {
             if(this.basket == null) {
                 this.basket = [];
@@ -59,7 +82,8 @@
         },
         showBasket: function() { 
             console.log("Show basket"); 
-            this.$.pages.selected = 'basket';
+            //this.$.pages.selected = 'basket';
+            this.page = 'basket';
         },
         filterImages: function(images) {
             return _.where(images, {'mime': 'image/jpeg'});
@@ -73,17 +97,25 @@
         showDetails: function(ev, d, sender) {
             var image = sender.templateInstance.model.image;
             this.currentImage = image;
-            this.$.pages.selected = 'imageDetails';
+            this.page = "imageDetails";
+            //this.$.pages.selected = 'imageDetails';
         },
         refreshImages: function() {
             this.$.service.reload();
-            this.$.pages.selected = 'imagesList';
+            this.page = 'imagesList';
+            //this.$.pages.selected = 'imagesList';
         },
         addToBasket: function(ev, d, sender) {
-            var image = sender.templateInstance.model.image;
+            var image = this.currentImage;
+            if(sender.templateInstance.model.image)
+                image = sender.templateInstance.model.image;
             this.basket.push(image);            
+        },
+        transComplete: function () {
+            console.log("Completed!");
         }
     });
+    //CoreStyle.g.transitions.heroDuration = 10;
 </script>
 
 </polymer-element>

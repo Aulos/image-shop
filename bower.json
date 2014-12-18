@@ -24,6 +24,7 @@
     "core-tooltip": "Polymer/core-tooltip",
     "core-localstorage": "Polymer/core-localstorage",
     "underscore": "~1.7.0",
-    "core-pages": "Polymer/core-pages#~0.5.2"
+    "core-pages": "Polymer/core-pages#~0.5.2",
+    "core-animated-pages": "Polymer/core-animated-pages#~0.5.2"
   }
 }
