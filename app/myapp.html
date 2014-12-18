@@ -5,10 +5,12 @@
 <link rel="import" href="../bower_components/core-tooltip/core-tooltip.html">
 <link rel="import" href="../bower_components/core-localstorage/core-localstorage.html">
 <link rel="import" href="../bower_components/core-animated-pages/core-animated-pages.html">
+<link rel="import" href="../bower_components/core-pages/core-pages.html">
 <link rel="import" href="image-service.html">
 <link rel="import" href="my-image.html">
 <link rel="import" href="my-basket.html">
 <link rel="import" href="my-details.html">
+<link rel="import" href="my-gallery.html">
 
 <script src="../bower_components/underscore/underscore.js"></script>
 
@@ -20,102 +22,90 @@
 
     <image-service id="service" images="{{images}}"></image-service>
 
-    <div vertical layout>
+    <div id="main-container" vertical layout>
         <core-toolbar>
             <div flex>Scalac Image Viewer</div>
             <input type="text" value="{{filterText}}" placeholder="Filter images"/>
-            <core-tooltip label="Refresh">
-                <core-icon-button icon="refresh" on-tap="{{refreshImages}}"></core-icon-button>
+            <core-tooltip label="Gallery">
+                <core-icon-button icon="refresh" on-tap="{{showGallery}}"></core-icon-button>
             </core-tooltip>
             <core-tooltip>
-                <core-icon-button icon="shopping-basket" on-tap="{{showBasket}}"></core-icon-button>
+                <core-icon-button icon="shopping-basket" on-tap="{{toggleBasket}}"></core-icon-button>
                 <ul tip>
-                    <template repeat="{{image in basket}}">
-                    <li><img src="{{image.url}}" style="max-height: 40px; max-width: 40px;"/></li>
+                    <template repeat="{{ img in basket }}">
+                        <li><img src="{{img.url}}" style="max-height: 40px; max-width: 40px;"/></li>
                     </template>
                 </ul>
             </core-tooltip>
         </core-toolbar>
 
-        <core-animated-pages id="pages" valueattr="id" selected="{{page}}" flex transitions="hero-transition" on-core-animated-pages-transition-end="{{transComplete}}" layout vertical>
-            <section id="imagesList" flex> 
-                <div class="images-container" layout horizontal wrap>
-                    <template repeat="{{image in images | filterImages | filterName(filterText) }}">
-                    <div class="chip" on-tap="{{showDetails}}" on-add="{{addToBasket}}" layout vertical hero-id="{{image.url}}" hero?="{{currentImage === image}}"> 
-                            <img class="art" flex src="{{image.url}}" hero-id="{{image.url}}.art" hero?="{{currentImage === image}}"/>
-                            <div class="caption">{{image.name}}</div>
-                            <core-icon-button class="addToBasket" icon="add-shopping-cart" on-tap="{{addToBasket}}"></core-icon-button>
-                        </div>
-                    </template>
-                </div>
+        <core-pages id="pages" selected="{{page}}" flex>
+            <section id="imagesList">
+                <my-gallery id="gallery" images="{{ images | filterImages | filterName(filterText) }}" on-action-call="{{toggleInBasket}}" inbasket="{{basket.length}}"></my-gallery>
             </section>
-
-            <section id="imageDetails">
-                <div class="card" layout horizontal flex hero hero-id="{{currentImage.url}}">
-                    <img src="{{currentImage.url}}" hero hero-id="{{currentImage.url}}.art" class="art"/>
-                    <div layout vertical>
-                        <h1 hero hero-id="{{currentImage.url}}.caption">{{currentImage.name}}</h1>
-                        <p flex>Some details</p>
-                        <div layout horizontal>
-                            <core-icon-button id="add" icon="add-shopping-cart" on-tap="{{addToBasket}}">Add to basket</core-icon-button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-            <section id="basket"> 
-                <div>
-                    <h1 hero hero-id="caption">Basket</h1>
-                    <my-basket></my-basket>
-                </div>
-            </section>
-        </core-animated-pages>
+            <section id="basket"><my-basket data="{{basket}}"></my-basket></section>
+        </core-pages>
     </div>
 </template>
 
 <script>
-    Polymer('my-app', {
-        page: "imagesList",
-        ready: function() {
-            if(this.basket == null) {
-                this.basket = [];
+    (function(){
+        Polymer('my-app', {
+            page: 0,
+            ready: function() {
+                if(!this.basket) {
+                    this.basket = [];
+                } 
+            },
+            domReady: function() {
+                var self = this;
+                this.$.gallery.showAction = function(image) { return true; };
+                this.$.gallery.actionIcon = function(image) {
+                    if(!self.alreadyIn(image)) {
+                        return "add-shopping-cart";
+                    } else {
+                        return "remove-circle";
+                    }
+                };
+                this.$.gallery.actionLabel = function(image) {
+                    return "";
+                };
+            },
+            filterImages: function(images) {
+                return _.where(images, {'mime': 'image/jpeg'});
+            },
+            filterName: function(images, name) {
+                if(name == null || name == "")
+                    return images
+                name = name.toLowerCase();
+                return _.filter(images, function(val) { return val.name.toLowerCase().indexOf(name) > -1; });
+            },
+            toggleBasket: function() { 
+                this.page = (this.page+1) % 2;
+            },
+            showGallery: function() {
+                //this.$.service.reload();
+                this.$.gallery.showList();
+                this.page = 0;
+            },
+            toggleInBasket: function(ev, image, sender) {
+                if(!this.alreadyIn(image)) {
+                    this.basket.push(image);
+                } else {
+                    var idx = this.indexOfUrl(image.url);
+                    if(idx >= 0 ) {
+                        this.basket.splice(idx, 1);                    
+                    }
+                }
+            },
+            alreadyIn: function(image) {
+                return this.indexOfUrl(image.url) >= 0;
+            },
+            indexOfUrl: function(url) {
+                return _.chain(this.basket).pluck('url').indexOf(url).value();
             }
-        },
-        showBasket: function() { 
-            console.log("Show basket"); 
-            //this.$.pages.selected = 'basket';
-            this.page = 'basket';
-        },
-        filterImages: function(images) {
-            return _.where(images, {'mime': 'image/jpeg'});
-        },
-        filterName: function(images, name) {
-            if(name == null || name == "")
-                return images
-            name = name.toLowerCase();
-            return _.filter(images, function(val) { return val.name.toLowerCase().indexOf(name) > -1; });
-        },
-        showDetails: function(ev, d, sender) {
-            var image = sender.templateInstance.model.image;
-            this.currentImage = image;
-            this.page = "imageDetails";
-            //this.$.pages.selected = 'imageDetails';
-        },
-        refreshImages: function() {
-            this.$.service.reload();
-            this.page = 'imagesList';
-            //this.$.pages.selected = 'imagesList';
-        },
-        addToBasket: function(ev, d, sender) {
-            var image = this.currentImage;
-            if(sender.templateInstance.model.image)
-                image = sender.templateInstance.model.image;
-            this.basket.push(image);            
-        },
-        transComplete: function () {
-            console.log("Completed!");
-        }
-    });
-    //CoreStyle.g.transitions.heroDuration = 10;
+        });
+    })();
 </script>
 
 </polymer-element>

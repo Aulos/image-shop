@@ -1,10 +1,22 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="my-gallery.html">
 
-<polymer-element name="my-basket">
+<polymer-element name="my-basket" attributes="data">
+<style>
+</style>
 <template>
-Basket stub
+<ul id="main-container">
+    <my-gallery images="{{data}}"></my-gallery>
+</ul>
 </template>
 <script>
-    Polymer({ });
+    Polymer({ 
+        ready: function() {
+            console.log("Creating...");
+            for(var url in this.data) {
+                console.log("   "+url + ": " + this.data[url]);
+            }
+        }
+    });
 </script>
 </polymer-element>
