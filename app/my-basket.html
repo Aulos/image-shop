@@ -1,10 +1,11 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/core-pages/core-pages.html">
 <link rel="import" href="../bower_components/core-list/core-list.html">
 <link rel="import" href="../bower_components/core-input/core-input.html">
 <link rel="import" href="../bower_components/core-icon-button/core-icon-button.html">
 <link rel="import" href="my-gallery.html">
 
-<polymer-element name="my-basket" attributes="basket images" vertical layout>
+<polymer-element name="my-basket" attributes="basket images" horizontal layout>
 <template>
     <style>
         :host {
@@ -32,7 +33,7 @@
         }
 
         .item.selected {
-            border: 1px solid black;
+            border: 1px solid silver;
         }
 
         .item .thumb {
@@ -49,25 +50,46 @@
             width: 4em;
         }
     </style>
-    <core-list data="{{ images | addCountFrom(basket) }}" selection="{{selection}}" flex multi>
-        <template>
-            <div class="item {{ {selected: selected} | tokenList }}" horizontal layout center>
-                <div>
-                    <core-icon icon="check-box-outline-blank" hidden?="{{selected}}"></core-icon>
-                    <core-icon icon="check-box" hidden?="{{!selected}}"></core-icon>
-                </div>
-                <img class="thumb" src="{{model.url}}"/>
-                <div class="label" flex vertical layout>
-                    <h3>{{ model.name }}</h3>
-                    <div>{{ model }}</div>
-                </div>
-                <div class="utils" data-model="{{ model }}"> 
-                    <core-input type="number" commitedValue="{{ basket[model.url] }}" value="{{ model.count }}"></core-input>
-                    <core-icon-button icon="delete" on-tap="{{removeItem}}"></core-icon-button>
-                </div>
+    <core-pages selected="{{page}}" flex>
+        <div vertical layout>
+            <div layout horizontal>
+                <core-icon-button icon="delete" on-tap="{{removeSelected}}" disabled?="{{selection.length == 0}}">Remove selected</core-icon-button>
+                <div flex></div>
+                <core-icon-button icon="arrow-forward" on-tap="{{gotoPersonalInfo}}" disabled?="{{ addCountFrom(images, basket).length == 0}}">Checkout</core-icon-button>
             </div>
-        </template>
-    </core-list>
+            <core-list data="{{ images | addCountFrom(basket) }}" selection="{{selection}}" flex multi>
+                <template>
+                    <div class="item {{ {selected: selected} | tokenList }}" horizontal layout center>
+                        <div>
+                            <core-icon icon="check-box-outline-blank" hidden?="{{selected}}"></core-icon>
+                            <core-icon icon="check-box" hidden?="{{!selected}}"></core-icon>
+                        </div>
+                        <img class="thumb" src="{{model.url}}"/>
+                        <div class="label" flex vertical layout>
+                            <h3>{{ model.name }}</h3>
+                        </div>
+                        <div class="utils" data-model="{{ model }}"> 
+                            <core-icon-button icon="delete" on-tap="{{removeItem}}"></core-icon-button>
+                        </div>
+                    </div>
+                </template>
+            </core-list>
+        </div>
+
+        <div vertical layout id="personalInfo">
+            <div layout horizontal>
+                <core-icon-button icon="arrow-back" on-tap="{{gotoBasket}}">Back to basket</core-icon-button>
+                <div flex></div>
+                <core-icon-button icon="payment" on-tap="{{purchase}}" disabled?="{{notValidForm}}">Pay</core-icon-button>
+            </div>
+            Checkout...
+        </div>
+
+        <div vertical layout id="statusPage">
+            Status
+        </div>
+
+    </core-pages>
 </template>
 <script>
     Polymer({ 
@@ -77,10 +99,29 @@
                 console.log("   " + url + ": " + this.basket[url]);
             }        
         },
+        page: 0,
         removeItem: function(e, d, s) {
             e.stopPropagation();
             var img = s.templateInstance.model.model;
             this.basket = _(this.basket).omit(img.url);
+        },
+        removeSelected: function(e, d, s) {
+            var urlsToRemove = _(this.selection).pluck('url');
+            this.basket = _(this.basket).omit(function(v, url) {
+                return _(urlsToRemove).contains(url);
+            });
+        },
+        gotoBasket: function() {
+            this.page = 0;
+        },
+        gotoPersonalInfo: function() {
+            this.page = 1;
+            this.notValidForm = true;
+            console.log('Checkouting...');
+        },
+        purchase: function() {
+            this.page = 2;
+            console.log('Purchase!')
         }
     });
 </script>

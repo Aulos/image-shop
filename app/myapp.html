@@ -41,10 +41,10 @@
         </core-toolbar>
 
         <core-pages id="pages" selected="{{page}}" flex>
-            <my-gallery id="gallery" images="{{ images | filterImages | filterName(filterText) }}" selectedImage="{{gallerySelected}}" on-action-call="{{addToBasket}}">
+            <my-gallery id="gallery" images="{{ addDependency(basket, images) | filterImages | filterName(filterText) }}" selectedImage="{{gallerySelected}}" on-action-call="{{addToBasket}}">
                 <div id="info">
                     <h1 hero hero-id="{{gallerySelected.url}}.caption">{{gallerySelected.name}}</h1>
-                    <h2>About author</h2>
+                    <h2>About the author</h2>
                     <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Proin nibh augue, suscipit a, scelerisque sed, lacinia in, mi. Cras vel lorem. Etiam pellentesque aliquet tellus. Phasellus pharetra nulla ac diam. Quisque semper justo at risus. Donec venenatis, turpis vel hendrerit interdum, dui ligula ultricies purus, sed posuere libero dui id orci. Nam congue, pede vitae dapibus aliquet, elit magna vulputate arcu, vel tempus metus leo non est. Etiam sit amet lectus quis est congue mollis. Phasellus congue lacus eget neque. Phasellus ornare, ante vitae consectetuer consequat, purus sapien ultricies dolor, et mollis pede metus eget nisi. Praesent sodales velit quis augue. Cras suscipit, urna at aliquam rhoncus, urna quam viverra nisi, in interdum massa nibh nec erat.</p>
                     <div reverse horizontal layout>
                         <core-icon-button icon="add-shopping-cart" on-tap="{{addSelectedToBasket}}" hidden?="{{alreadyIn(basket, gallerySelected)}}">Add to basket</core-icon-button>
@@ -56,20 +56,30 @@
                 </div>
             </my-gallery>
 
-            <my-basket images="{{images}}" basket="{{ basket }}"></my-basket>
+            <my-basket id="basket" images="{{images}}" basket="{{ basket }}"></my-basket>
         </core-pages>
     </div>
 </template>
 
 <script>
     (function(){
+        var _addToBasket = function(basket, image) {
+            basket[image.url] = 1;
+            return _(basket).clone();
+        };
+        var _removeFromBasket = function(basket, image) {
+            return _(basket).omit(image.url);
+        };
+
         Polymer('my-app', {
             page: 0,
             domReady: function() {
-                this.$.gallery.actionIcon = function(image) { return "add-shopping-cart"; };
+                var self = this;
+                this.$.gallery.actionIcon = function(image) { return self.alreadyIn(self.basket, image) ? "delete" : "add-shopping-cart"; };
             },
             toggleBasket: function() { 
                 this.page = (this.page+1) % 2;
+                this.$.basket.page = 0;
             },
             showGallery: function() {
                 //this.$.service.reload();
@@ -80,16 +90,12 @@
                 this.gallerySelected && this.addToBasket(ev, this.gallerySelected);
             },
             addToBasket: function(ev, image) {
-                if(this.alreadyIn(this.basket, image)) {
-                    this.basket[image.url]++;
-                } else {
-                    this.basket[image.url] = 1;
-                }
-                // to notify change in basket
-                this.basket = _(this.basket).clone(); // shallow copy
+                this.basket = this.alreadyIn(this.basket, image) 
+                    ? _removeFromBasket(this.basket, image)
+                    : _addToBasket(this.basket, image);
             },
             removeSelectedFromBasket: function(ev, d, s) {
-                this.basket = _(this.basket).omit(this.gallerySelected.url);
+                this.basket = _removeFromBasket(this.basket, this.gallerySelected);
             },
             alreadyIn: function(basket, image) {
                 return image && _(basket).has(image.url) && basket[image.url] > 0;
