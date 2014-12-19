@@ -1,5 +1,6 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/core-animated-pages/core-animated-pages.html">
+<link rel="import" href="../bower_components/core-media-query/core-media-query.html">
 <script src="../bower_components/underscore/underscore.js"></script>
 
 <polymer-element name="my-gallery" attributes="images selectedImage page" vertical layout>
@@ -21,7 +22,8 @@
 
         .card > img {
             margin-right: 20px;
-            max-width: 50%;
+            width: 90%;
+            max-height: 90%;
         }
 
         .chip {
@@ -52,26 +54,24 @@
         }
     </style>
 
+    <core-media-query query="max-width: 700px" queryMatches="{{phoneScreen}}"></core-media-query>
+
     <core-animated-pages id="pages" selected="{{page}}" transitions="hero-transition" flex>
     
-        <section>
-            <div class="chip-container" hero-p layout horizontal wrap>
-                <template repeat="{{image in images}}">
-                <div class="chip" on-tap="{{showDetails}}" layout vertical hero-id="{{image.url}}" end-justified hero?="{{selectedImage === image}}"> 
-                        <img src="{{image.url}}" hero-id="{{image.url}}.art" hero?="{{selectedImage === image}}">
-                        <div class="caption">{{image.name}}</div>
-                        <core-icon-button class="imageAction" icon="{{ actionIcon(image) }}" on-tap="{{doAction}}">{{actionLabel(image)}}</core-icon-button>
-                    </div>
-                </template>
-            </div>
-        </section>
+        <div class="chip-container" hero-p layout horizontal?="{{!phoneScreen}}" wrap?="{{!phoneScreen}}" vertical?="{{phoneScreen}}">
+            <template repeat="{{image in images}}">
+                <div class="chip" on-tap="{{showDetails}}" layout vertical hero-id="{{image.url}}" end-justified hero?="{{selectedImage === image}}" auto-vertical> 
+                    <img src="{{image.url}}" hero-id="{{image.url}}.art" hero?="{{selectedImage === image}}">
+                    <div class="caption">{{image.name}}</div>
+                    <core-icon-button class="imageAction" icon="{{ actionIcon(image) }}" on-tap="{{doAction}}">{{actionLabel(image)}}</core-icon-button>
+                </div>
+            </template>
+        </div>
 
-        <section id="details">
-            <div class="card" horizontal layout hero hero-id="{{selectedImage.url}}" start-justified>
-                <img src="{{selectedImage.url}}" hero hero-id="{{selectedImage.url}}.art" self-start/>
-                <content select="div#info" layout vertical flex></content>
-            </div>
-        </section>
+        <div class="card" hero hero-id="{{selectedImage.url}}" layout horizontal?="{{!phoneScreen}}" vertical?="{{phoneScreen}}">
+            <img src="{{selectedImage.url}}" hero hero-id="{{selectedImage.url}}.art" self-start?="{{!phoneScreen}}" auto-vertical/>
+            <content select="div#info" flex?="{{!phoneScreen}}" auto-vertical></content>
+        </div>
     </core-animated-pages>
 </template>
 <script>
@@ -88,12 +88,11 @@
             this.page = 0;
         },
         doAction: function(e, d, s) {
-            e.stopPropagation();
-            var image = this.selectedImage;
             if(s.templateInstance.model.image) {
+                e.stopPropagation();
                 image = s.templateInstance.model.image;
+                this.fire('action-call', image);
             }
-            this.fire('action-call', image);
         }
     });
 </script>
