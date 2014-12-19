@@ -1,0 +1,30 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<script src="../bower_components/underscore/underscore.js"></script>
+
+<script>
+    PolymerExpressions.prototype.addCountFrom = function(images, basket) {
+        var basketKeys = _(basket).keys().sort();
+        return _.chain(images).filter(function(img) {
+            return _(basketKeys).indexOf(img.url, true) >= 0 && basket[img.url] > 0;
+        }).map(function(img) {
+            return _(img).extend({count: basket[img.url]});
+        }).value();
+    };
+    PolymerExpressions.prototype.getKeys = function(obj) {
+        return _(obj).keys(); 
+    };
+    PolymerExpressions.prototype.countImages = function(obj) { 
+        return _.chain(obj).values().reduce(function(a,b) { return a+b; }, 0).value(); 
+    };
+    PolymerExpressions.prototype.filterImages = function(images) {
+        return _.where(images, {'mime': 'image/jpeg'});
+    };
+    PolymerExpressions.prototype.filterName = function(images, name) {
+        if(name == null || name == "")
+        return images
+        name = name.toLowerCase();
+        return _.filter(images, function(val) { return val.name.toLowerCase().indexOf(name) > -1; });
+    };
+</script>
+
