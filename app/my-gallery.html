@@ -27,13 +27,10 @@
         }
 
         .chip {
-            min-height: 250px;
+            height: 350px;
+            min-height: 350px;
             display: inline-block;
             margin: 5px;
-        }
-
-        .chip > img {
-            max-height: 200px;
         }
 
         .chip .imageAction {
@@ -46,10 +43,11 @@
         }
 
         .chip .caption {
+            box-sizing: border-box;
             height: 30px;
             background-color: rgba(0, 0, 0, .8);
             color:white;
-            line-height: 30px;
+            padding: 5px;
         }
     </style>
 
@@ -59,9 +57,9 @@
     
         <div class="chip-container" hero-p layout horizontal?="{{!phoneScreen}}" wrap?="{{!phoneScreen}}" vertical?="{{phoneScreen}}">
             <template repeat="{{image in images}}">
-                <div class="chip" on-tap="{{showDetails}}" layout vertical hero-id="{{image.url}}" end-justified hero?="{{selectedImage === image}}" auto-vertical relative flex> 
-                    <img src="{{image.url}}" hero-id="{{image.url}}.art" hero?="{{selectedImage === image}}">
-                    <div class="caption">{{image.name}}</div>
+                <div class="chip" on-tap="{{showDetails}}" layout vertical hero-id="{{image.url}}" center hero?="{{selectedImage === image}}" auto-vertical relative> 
+                    <img src="{{image.url}}" hero-id="{{image.url}}.art" hero?="{{selectedImage === image}}" flex>
+                    <div class="caption" self-stretch>{{image.name}}</div>
                     <!--<core-icon-button class="imageAction" icon="{{ actionIcon(image) }}" on-tap="{{doAction}}">{{actionLabel(image)}}</core-icon-button>-->
                 </div>
             </template>
