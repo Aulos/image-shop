@@ -12,7 +12,7 @@
 
 <script src="../bower_components/underscore/underscore.js"></script>
 
-<polymer-element name="my-app">
+<polymer-element name="my-app" horizontal layout>
 <template>
     <link rel="stylesheet" href="myapp.css">
 
@@ -20,7 +20,7 @@
 
     <image-service id="service" images="{{images}}" on-images-loaded="{{imagesLoaded}}"></image-service>
 
-    <div id="main-container" vertical layout>
+    <div id="main-container" vertical layout flex>
         <core-toolbar>
             <div flex>Scalac Image Viewer</div>
             <input type="text" value="{{filterText}}" placeholder="Filter images"/>
@@ -41,25 +41,22 @@
         </core-toolbar>
 
         <core-pages id="pages" selected="{{page}}" flex>
-            <section id="imagesList">
-                <my-gallery id="gallery" images="{{ images | filterImages | filterName(filterText) }}" selectedImage="{{gallerySelected}}" on-action-call="{{addToBasket}}">
-                    <div id="info">
-                        <h1 hero hero-id="{{gallerySelected.url}}.caption">{{gallerySelected.name}}</h1>
-                        <h2>About author</h2>
-                        <p flex>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Proin nibh augue, suscipit a, scelerisque sed, lacinia in, mi. Cras vel lorem. Etiam pellentesque aliquet tellus. Phasellus pharetra nulla ac diam. Quisque semper justo at risus. Donec venenatis, turpis vel hendrerit interdum, dui ligula ultricies purus, sed posuere libero dui id orci. Nam congue, pede vitae dapibus aliquet, elit magna vulputate arcu, vel tempus metus leo non est. Etiam sit amet lectus quis est congue mollis. Phasellus congue lacus eget neque. Phasellus ornare, ante vitae consectetuer consequat, purus sapien ultricies dolor, et mollis pede metus eget nisi. Praesent sodales velit quis augue. Cras suscipit, urna at aliquam rhoncus, urna quam viverra nisi, in interdum massa nibh nec erat.</p>
-                        <div reverse horizontal layout>
-                            <core-icon-button icon="add-shopping-cart" on-tap="{{addSelectedToBasket}}" hidden?="{{alreadyIn(basket, gallerySelected)}}">Add to basket</core-icon-button>
-                            <template if="{{alreadyIn(basket, gallerySelected)}}">
-                                <core-icon-button icon="delete" on-tap="{{removeSelectedFromBasket}}">Remove from basket</core-icon-button>
-                            </template>
-                            <core-icon-button icon="arrow-back" on-tap="{{showGallery}}">Back</core-icon-button>
-                        </div>
+            <my-gallery id="gallery" images="{{ images | filterImages | filterName(filterText) }}" selectedImage="{{gallerySelected}}" on-action-call="{{addToBasket}}">
+                <div id="info">
+                    <h1 hero hero-id="{{gallerySelected.url}}.caption">{{gallerySelected.name}}</h1>
+                    <h2>About author</h2>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Proin nibh augue, suscipit a, scelerisque sed, lacinia in, mi. Cras vel lorem. Etiam pellentesque aliquet tellus. Phasellus pharetra nulla ac diam. Quisque semper justo at risus. Donec venenatis, turpis vel hendrerit interdum, dui ligula ultricies purus, sed posuere libero dui id orci. Nam congue, pede vitae dapibus aliquet, elit magna vulputate arcu, vel tempus metus leo non est. Etiam sit amet lectus quis est congue mollis. Phasellus congue lacus eget neque. Phasellus ornare, ante vitae consectetuer consequat, purus sapien ultricies dolor, et mollis pede metus eget nisi. Praesent sodales velit quis augue. Cras suscipit, urna at aliquam rhoncus, urna quam viverra nisi, in interdum massa nibh nec erat.</p>
+                    <div reverse horizontal layout>
+                        <core-icon-button icon="add-shopping-cart" on-tap="{{addSelectedToBasket}}" hidden?="{{alreadyIn(basket, gallerySelected)}}">Add to basket</core-icon-button>
+                        <template if="{{alreadyIn(basket, gallerySelected)}}">
+                            <core-icon-button icon="delete" on-tap="{{removeSelectedFromBasket}}">Remove from basket</core-icon-button>
+                        </template>
+                        <core-icon-button icon="arrow-back" on-tap="{{showGallery}}">Back</core-icon-button>
                     </div>
-                </my-gallery>
-            </section>
-            <section id="basket">
-                <my-basket images="{{images}}" basket="{{ basket }}"></my-basket>
-            </section>
+                </div>
+            </my-gallery>
+
+            <my-basket images="{{images}}" basket="{{ basket }}"></my-basket>
         </core-pages>
     </div>
 </template>
