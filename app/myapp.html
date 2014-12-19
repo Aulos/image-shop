@@ -1,5 +1,4 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/core-header-panel/core-header-panel.html">
 <link rel="import" href="../bower_components/core-toolbar/core-toolbar.html">
 <link rel="import" href="../bower_components/core-icon-button/core-icon-button.html">
 <link rel="import" href="../bower_components/core-tooltip/core-tooltip.html">
@@ -7,9 +6,8 @@
 <link rel="import" href="../bower_components/core-animated-pages/core-animated-pages.html">
 <link rel="import" href="../bower_components/core-pages/core-pages.html">
 <link rel="import" href="image-service.html">
-<link rel="import" href="my-image.html">
+<link rel="import" href="my-filters.html">
 <link rel="import" href="my-basket.html">
-<link rel="import" href="my-details.html">
 <link rel="import" href="my-gallery.html">
 
 <script src="../bower_components/underscore/underscore.js"></script>
@@ -18,9 +16,9 @@
 <template>
     <link rel="stylesheet" href="myapp.css">
 
-    <core-localstorage name="myapp-basket" value="{{basket}}"></core-localstorage>
+    <core-localstorage id="basketstor" name="myapp-basket" value="{{basket}}" on-core-localstorage-load="{{basketLoaded}}"></core-localstorage>
 
-    <image-service id="service" images="{{images}}"></image-service>
+    <image-service id="service" images="{{images}}" on-images-loaded="{{imagesLoaded}}"></image-service>
 
     <div id="main-container" vertical layout>
         <core-toolbar>
@@ -31,19 +29,37 @@
             </core-tooltip>
             <core-tooltip>
                 <core-icon-button icon="shopping-basket" on-tap="{{toggleBasket}}"></core-icon-button>
-                <ul tip>
-                    <template repeat="{{ img in basket }}">
-                        <li><img src="{{img.url}}" style="max-height: 40px; max-width: 40px;"/></li>
+                <div id="basketTip" layout horizontal wrap tip>
+                    <template if="{{ countImages(basket) == 0 }}">No items in basket</template>
+                    <template repeat="{{ url in getKeys(basket) }}"> 
+                        <template if="{{ basket[url] > 0 }}">
+                            <img src="{{url}}"/>
+                        </template>
                     </template>
-                </ul>
+                </div>
             </core-tooltip>
         </core-toolbar>
 
         <core-pages id="pages" selected="{{page}}" flex>
             <section id="imagesList">
-                <my-gallery id="gallery" images="{{ images | filterImages | filterName(filterText) }}" on-action-call="{{toggleInBasket}}" inbasket="{{basket.length}}"></my-gallery>
+                <my-gallery id="gallery" images="{{ images | filterImages | filterName(filterText) }}" selectedImage="{{gallerySelected}}" on-action-call="{{addToBasket}}">
+                    <div id="info">
+                        <h1 hero hero-id="{{gallerySelected.url}}.caption">{{gallerySelected.name}}</h1>
+                        <h2>About author</h2>
+                        <p flex>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Proin nibh augue, suscipit a, scelerisque sed, lacinia in, mi. Cras vel lorem. Etiam pellentesque aliquet tellus. Phasellus pharetra nulla ac diam. Quisque semper justo at risus. Donec venenatis, turpis vel hendrerit interdum, dui ligula ultricies purus, sed posuere libero dui id orci. Nam congue, pede vitae dapibus aliquet, elit magna vulputate arcu, vel tempus metus leo non est. Etiam sit amet lectus quis est congue mollis. Phasellus congue lacus eget neque. Phasellus ornare, ante vitae consectetuer consequat, purus sapien ultricies dolor, et mollis pede metus eget nisi. Praesent sodales velit quis augue. Cras suscipit, urna at aliquam rhoncus, urna quam viverra nisi, in interdum massa nibh nec erat.</p>
+                        <div reverse horizontal layout>
+                            <core-icon-button icon="add-shopping-cart" on-tap="{{addSelectedToBasket}}" hidden?="{{alreadyIn(basket, gallerySelected)}}">Add to basket</core-icon-button>
+                            <template if="{{alreadyIn(basket, gallerySelected)}}">
+                                <core-icon-button icon="delete" on-tap="{{removeSelectedFromBasket}}">Remove from basket</core-icon-button>
+                            </template>
+                            <core-icon-button icon="arrow-back" on-tap="{{showGallery}}">Back</core-icon-button>
+                        </div>
+                    </div>
+                </my-gallery>
             </section>
-            <section id="basket"><my-basket data="{{basket}}"></my-basket></section>
+            <section id="basket">
+                <my-basket images="{{images}}" basket="{{ basket }}"></my-basket>
+            </section>
         </core-pages>
     </div>
 </template>
@@ -52,33 +68,8 @@
     (function(){
         Polymer('my-app', {
             page: 0,
-            ready: function() {
-                if(!this.basket) {
-                    this.basket = [];
-                } 
-            },
             domReady: function() {
-                var self = this;
-                this.$.gallery.showAction = function(image) { return true; };
-                this.$.gallery.actionIcon = function(image) {
-                    if(!self.alreadyIn(image)) {
-                        return "add-shopping-cart";
-                    } else {
-                        return "remove-circle";
-                    }
-                };
-                this.$.gallery.actionLabel = function(image) {
-                    return "";
-                };
-            },
-            filterImages: function(images) {
-                return _.where(images, {'mime': 'image/jpeg'});
-            },
-            filterName: function(images, name) {
-                if(name == null || name == "")
-                    return images
-                name = name.toLowerCase();
-                return _.filter(images, function(val) { return val.name.toLowerCase().indexOf(name) > -1; });
+                this.$.gallery.actionIcon = function(image) { return "add-shopping-cart"; };
             },
             toggleBasket: function() { 
                 this.page = (this.page+1) % 2;
@@ -88,22 +79,24 @@
                 this.$.gallery.showList();
                 this.page = 0;
             },
-            toggleInBasket: function(ev, image, sender) {
-                if(!this.alreadyIn(image)) {
-                    this.basket.push(image);
+            addSelectedToBasket: function(ev) {
+                this.gallerySelected && this.addToBasket(ev, this.gallerySelected);
+            },
+            addToBasket: function(ev, image) {
+                if(this.alreadyIn(this.basket, image)) {
+                    this.basket[image.url]++;
                 } else {
-                    var idx = this.indexOfUrl(image.url);
-                    if(idx >= 0 ) {
-                        this.basket.splice(idx, 1);                    
-                    }
+                    this.basket[image.url] = 1;
                 }
+                // to notify change in basket
+                this.basket = _(this.basket).clone(); // shallow copy
             },
-            alreadyIn: function(image) {
-                return this.indexOfUrl(image.url) >= 0;
+            removeSelectedFromBasket: function(ev, d, s) {
+                this.basket = _(this.basket).omit(this.gallerySelected.url);
             },
-            indexOfUrl: function(url) {
-                return _.chain(this.basket).pluck('url').indexOf(url).value();
-            }
+            alreadyIn: function(basket, image) {
+                return image && _(basket).has(image.url) && basket[image.url] > 0;
+            },
         });
     })();
 </script>

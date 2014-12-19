@@ -1,21 +1,86 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/core-list/core-list.html">
+<link rel="import" href="../bower_components/core-input/core-input.html">
+<link rel="import" href="../bower_components/core-icon-button/core-icon-button.html">
 <link rel="import" href="my-gallery.html">
 
-<polymer-element name="my-basket" attributes="data">
-<style>
-</style>
+<polymer-element name="my-basket" attributes="basket images" vertical layout>
 <template>
-<ul id="main-container">
-    <my-gallery images="{{data}}"></my-gallery>
-</ul>
+    <style>
+        :host {
+            display: block;
+            padding: 10px;
+            padding-bottom: 0;
+            height: 100%;
+        }
+
+        core-list {
+            height: 100%;
+            display:block;
+        }
+
+        .item {
+            position: relative;
+            box-sizing: border-box;
+            height: 80px;
+            border-bottom: 1px solid #ddd;
+            padding: 5px;
+            cursor: default;
+            background-color: white;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .item.selected {
+            border: 1px solid black;
+        }
+
+        .item .thumb {
+            position: absolute;
+            left: 35px;
+            max-width: 90px;
+            max-height: 70px;
+        }
+        .item .label {
+            margin-left: 135px;
+        }
+
+        .item .utils input[type="number"] {
+            width: 4em;
+        }
+    </style>
+    <core-list data="{{ images | addCountFrom(basket) }}" selection="{{selection}}" flex multi>
+        <template>
+            <div class="item {{ {selected: selected} | tokenList }}" horizontal layout center>
+                <div>
+                    <core-icon icon="check-box-outline-blank" hidden?="{{selected}}"></core-icon>
+                    <core-icon icon="check-box" hidden?="{{!selected}}"></core-icon>
+                </div>
+                <img class="thumb" src="{{model.url}}"/>
+                <div class="label" flex vertical layout>
+                    <h3>{{ model.name }}</h3>
+                    <div>{{ model }}</div>
+                </div>
+                <div class="utils" data-model="{{ model }}"> 
+                    <core-input type="number" commitedValue="{{ basket[model.url] }}" value="{{ model.count }}"></core-input>
+                    <core-icon-button icon="delete" on-tap="{{removeItem}}"></core-icon-button>
+                </div>
+            </div>
+        </template>
+    </core-list>
 </template>
 <script>
     Polymer({ 
         ready: function() {
             console.log("Creating...");
-            for(var url in this.data) {
-                console.log("   "+url + ": " + this.data[url]);
-            }
+            for(var url in this.basket) {
+                console.log("   " + url + ": " + this.basket[url]);
+            }        
+        },
+        removeItem: function(e, d, s) {
+            e.stopPropagation();
+            var img = s.templateInstance.model.model;
+            this.basket = _(this.basket).omit(img.url);
         }
     });
 </script>

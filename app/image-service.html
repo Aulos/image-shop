@@ -11,14 +11,6 @@
         on-polymer-error="{{requestError}}"
     >
     </polymer-jsonp>
-    <!--core-ajax id="ajax" 
-        auto 
-        url="https://en.wikipedia.org/w/api.php?action=query&list=allimages&ailimit=50&format=json"
-        headers='{"X-User-Agent": "ScalacImageViewer/1.0"}'
-        on-core-response="{{imagesLoaded}}"
-        on-core-error="{{requestError}}"
-        handleAs="json">
-    </core-ajax-->
 </template>
 <script>
     Polymer({
@@ -35,6 +27,7 @@
             // .slice(0) gives me a copy
             if(this.$.ajax.response && this.$.ajax.response.query && this.$.ajax.response.query.allimages) {
                 this.images = this.$.ajax.response.query.allimages.slice(0);
+                this.fire('images-loaded');
             }
         },
         requestError: function() {

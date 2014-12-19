@@ -17,3 +17,19 @@
 input[type="text"] {
     padding: 5px;
 }
+
+#basketTip {
+    width: 500px;
+    max-width: 80%;
+    padding: 10px;
+}
+
+#basketTip img {
+    max-width: 40px;
+    max-height: 40px;
+    margin: 2px;    
+}
+
+my-basket {
+    height: 500px;
+}
