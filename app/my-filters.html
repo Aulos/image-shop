@@ -26,8 +26,8 @@
         name = name.toLowerCase();
         return _.filter(images, function(val) { return val.name.toLowerCase().indexOf(name) > -1; });
     };
-    PolymerExpressions.prototype.addDependency = function(dependency, images) {
-        return images;
-    };
+    PolymerExpressions.prototype.withoutZeros = function(basket) {
+        return _(basket).omit(function(v) { return v == 0; });
+    }
 </script>
 

@@ -3,12 +3,13 @@
 <link rel="import" href="../bower_components/core-icon-button/core-icon-button.html">
 <link rel="import" href="../bower_components/core-tooltip/core-tooltip.html">
 <link rel="import" href="../bower_components/core-localstorage/core-localstorage.html">
-<link rel="import" href="../bower_components/core-animated-pages/core-animated-pages.html">
 <link rel="import" href="../bower_components/core-pages/core-pages.html">
+<link rel="import" href="../bower_components/core-scroll-threshold/core-scroll-threshold.html">
 <link rel="import" href="image-service.html">
 <link rel="import" href="my-filters.html">
 <link rel="import" href="my-basket.html">
 <link rel="import" href="my-gallery.html">
+<link rel="import" href="my-imagelist.html">
 
 <script src="../bower_components/underscore/underscore.js"></script>
 
@@ -17,46 +18,44 @@
     <link rel="stylesheet" href="myapp.css">
 
     <core-localstorage id="basketstor" name="myapp-basket" value="{{basket}}" on-core-localstorage-load="{{basketLoaded}}"></core-localstorage>
+    <core-scroll-threshold id="threshold" scrollTarget="{{$['main-container']}}" lowerThreshold="100" on-lower-triggered="{{loadMoreImages}}"></core-scroll-threshold>
 
     <image-service id="service" images="{{images}}" on-images-loaded="{{imagesLoaded}}"></image-service>
 
     <div id="main-container" vertical layout flex>
         <core-toolbar>
-            <div flex>Scalac Image Viewer</div>
-            <input type="text" value="{{filterText}}" placeholder="Filter images"/>
+            <h1 flex><core-icon icon="cloud-queue" style="height: 80px; width: 80px; color: blue;" relative><core-icon icon="store" fit style="color: green; top: 25px; left: 20px; width: 40px; height: 40px;"></core-icon></core-icon> WebImageStore</h1>
+            <input type="search" value="{{filterText}}" placeholder="Filter images"/>
             <core-tooltip label="Gallery">
-                <core-icon-button icon="refresh" on-tap="{{showGallery}}"></core-icon-button>
+                <core-icon-button icon="apps" on-tap="{{showGallery}}" active?="{{page == 0 && $.gallery.page == 0}}"></core-icon-button>
             </core-tooltip>
             <core-tooltip>
-                <core-icon-button icon="shopping-basket" on-tap="{{toggleBasket}}"></core-icon-button>
-                <div id="basketTip" layout horizontal wrap tip>
-                    <template if="{{ countImages(basket) == 0 }}">No items in basket</template>
-                    <template repeat="{{ url in getKeys(basket) }}"> 
-                        <template if="{{ basket[url] > 0 }}">
-                            <img src="{{url}}"/>
-                        </template>
-                    </template>
-                </div>
+                <core-icon-button icon="shopping-basket" on-tap="{{toggleBasket}}" active?="{{ page == 1 }}"></core-icon-button>
+                <my-imagelist id="basketTip" tip urls="{{basket | withoutZeros | getKeys}}" emptyMessage="No items in basket"></my-imagelist>
             </core-tooltip>
         </core-toolbar>
 
-        <core-pages id="pages" selected="{{page}}" flex>
-            <my-gallery id="gallery" images="{{ addDependency(basket, images) | filterImages | filterName(filterText) }}" selectedImage="{{gallerySelected}}" on-action-call="{{addToBasket}}">
+        <core-pages id="pages" selected="{{page}}" flex self-center>
+            <my-gallery id="gallery" images="{{ images | filterImages | filterName(filterText) }}" basket="{{basket}}" selectedImage="{{gallerySelected}}" 
+                    on-action-add="{{addToBasket}}" 
+                    on-action-remove="{{addToBasket}}" 
+                    >
                 <div id="info">
-                    <h1 hero hero-id="{{gallerySelected.url}}.caption">{{gallerySelected.name}}</h1>
+                    <h1>{{gallerySelected.name}}</h1>
                     <h2>About the author</h2>
                     <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Proin nibh augue, suscipit a, scelerisque sed, lacinia in, mi. Cras vel lorem. Etiam pellentesque aliquet tellus. Phasellus pharetra nulla ac diam. Quisque semper justo at risus. Donec venenatis, turpis vel hendrerit interdum, dui ligula ultricies purus, sed posuere libero dui id orci. Nam congue, pede vitae dapibus aliquet, elit magna vulputate arcu, vel tempus metus leo non est. Etiam sit amet lectus quis est congue mollis. Phasellus congue lacus eget neque. Phasellus ornare, ante vitae consectetuer consequat, purus sapien ultricies dolor, et mollis pede metus eget nisi. Praesent sodales velit quis augue. Cras suscipit, urna at aliquam rhoncus, urna quam viverra nisi, in interdum massa nibh nec erat.</p>
-                    <div reverse horizontal layout>
+                    <div horizontal layout>
+                        <core-icon-button icon="chevron-left" on-tap="{{closeDetails}}">Back</core-icon-button>
+                        <div flex></div>
                         <core-icon-button icon="add-shopping-cart" on-tap="{{addSelectedToBasket}}" hidden?="{{alreadyIn(basket, gallerySelected)}}">Add to basket</core-icon-button>
-                        <template if="{{alreadyIn(basket, gallerySelected)}}">
-                            <core-icon-button icon="delete" on-tap="{{removeSelectedFromBasket}}">Remove from basket</core-icon-button>
-                        </template>
-                        <core-icon-button icon="arrow-back" on-tap="{{showGallery}}">Back</core-icon-button>
+                        <core-icon-button icon="delete" on-tap="{{removeSelectedFromBasket}}" hidden?="{{ ! alreadyIn(basket, gallerySelected)}}">Remove from basket</core-icon-button>
                     </div>
                 </div>
             </my-gallery>
 
-            <my-basket id="basket" images="{{images}}" basket="{{ basket }}"></my-basket>
+            <div self-center>
+                <my-basket id="basket" images="{{images}}" basket="{{basket}}" on-finished="{{showGallery}}"></my-basket>
+            </div>
         </core-pages>
     </div>
 </template>
@@ -73,17 +72,15 @@
 
         Polymer('my-app', {
             page: 0,
-            domReady: function() {
-                var self = this;
-                this.$.gallery.actionIcon = function(image) { return self.alreadyIn(self.basket, image) ? "delete" : "add-shopping-cart"; };
+            ready: function() {
+                this.$.gallery.showAction = _(function(image) { return this.alreadyIn(self.basket, image) ? 0 : 1; }).bind(this);
             },
             toggleBasket: function() { 
                 this.page = (this.page+1) % 2;
-                this.$.basket.page = 0;
+                this.$.basket.show();
             },
             showGallery: function() {
                 //this.$.service.reload();
-                this.$.gallery.showList();
                 this.page = 0;
             },
             addSelectedToBasket: function(ev) {
@@ -99,6 +96,15 @@
             },
             alreadyIn: function(basket, image) {
                 return image && _(basket).has(image.url) && basket[image.url] > 0;
+            },
+            clearFilterText: function() { this.filterText = ""; },
+            loadMoreImages: function() {
+                console.log('a');
+                this.$.service.loadMore();
+            },
+            closeDetails: function() {
+                console.log('close details');
+                this.$.gallery.show();
             },
         });
     })();

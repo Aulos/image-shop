@@ -1,14 +1,18 @@
-input[type="text"] {
+input[type="search"] {
     padding: 5px;
+    height: 25px;
+    border: 1px solid white;
+    border-radius: 5px;
+    margin-right: 10px;
 }
 
 #basketTip {
     width: 500px;
     max-width: 80%;
-    padding: 10px;
+    padding: 5px;
 }
 
-#basketTip img {
+#basketTip::shadow img {
     max-width: 40px;
     max-height: 40px;
     margin: 2px;    
@@ -17,3 +21,15 @@ input[type="text"] {
 #pages > * {
     background-color: white;
 }
+
+#pages {
+    width: 90%;
+}
+
+@media only screen and (max-width: 650px) {
+    #pages {
+        width: 100%;
+    }
+}
+
+

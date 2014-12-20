@@ -5,38 +5,55 @@
 <polymer-element name="image-service" attributes="images" hidden>
 <template>
     <polymer-jsonp id="ajax"
-        auto
-        url="https://en.wikipedia.org/w/api.php?action=query&list=allimages&ailimit=50&aiprop=mime|url&format=json&callback="
         on-polymer-response="{{imagesLoaded}}"
         on-polymer-error="{{requestError}}"
     >
     </polymer-jsonp>
 </template>
 <script>
-    Polymer({
-        created: function() {
-            this.images = [];
-            console.log('Service created');
-        },
-        ready: function() {
-            this.$.ajax.xhrArgs = {
-                sync: false
-            };
-        },
-        imagesLoaded: function() {
-            // .slice(0) gives me a copy
-            if(this.$.ajax.response && this.$.ajax.response.query && this.$.ajax.response.query.allimages) {
-                this.images = this.$.ajax.response.query.allimages.slice(0);
-                this.fire('images-loaded');
-            }
-        },
-        requestError: function() {
-            console.error('Got error:' + this.$.ajax.error);
-        },
-        reload: function() {
-            this.$.ajax.go();
-        }
-    });
+    (function() {
+        var url = "https://en.wikipedia.org/w/api.php?action=query&list=allimages&ailimit=50&aiprop=mime|url&format=json"
+        Polymer({
+            ready: function() {
+                /*this.$.ajax.xhrArgs = {
+                    sync: false
+                };*/
+                this.reload();
+            },
+            imagesLoaded: function() {
+                var resp = this.$.ajax.response;
+                if(resp) {
+                    if(resp['query-continue'] && resp['query-continue'].allimages && resp['query-continue'].allimages.aicontinue) {
+                        this.continueId = resp['query-continue'].allimages.aicontinue;
+                    }
+                    if(this.$.ajax.response.query && this.$.ajax.response.query.allimages) {
+                        // .slice(0) gives me a copy
+                        this.images = this.images.concat(this.$.ajax.response.query.allimages);
+                        this.fire('images-loaded');
+                    }
+                }
+            },
+            requestError: function() {
+                console.error('Got error:' + this.$.ajax.error);
+            },
+            load: function(url) {
+                this.$.ajax.url = url + '&callback=';
+                this.$.ajax.go();
+            },
+            reload: function() {
+                this.continueId = null;
+                this.images = [];
+                this.load(url);
+            },
+            loadMore: function() {
+                if(!this.continueId) {
+                    this.load(url);
+                } else {
+                    this.load(url + '&aicontinue=' + this.continueId);
+                }
+            },
+        });
+    })();
 </script>
 
 </polymer-element>

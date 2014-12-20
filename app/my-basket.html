@@ -2,61 +2,22 @@
 <link rel="import" href="../bower_components/core-pages/core-pages.html">
 <link rel="import" href="../bower_components/core-list/core-list.html">
 <link rel="import" href="../bower_components/core-input/core-input.html">
+<link rel="import" href="../bower_components/core-field/core-field.html">
 <link rel="import" href="../bower_components/core-icon-button/core-icon-button.html">
 <link rel="import" href="my-gallery.html">
+<link rel="import" href="my-imagelist.html">
 
-<polymer-element name="my-basket" attributes="basket images" horizontal layout>
+<polymer-element name="my-basket" attributes="basket images form" horizontal layout>
 <template>
-    <style>
-        :host {
-            display: block;
-            padding: 10px;
-            padding-bottom: 0;
-            height: 100%;
-        }
-
-        core-list {
-            height: 100%;
-            display:block;
-        }
-
-        .item {
-            position: relative;
-            box-sizing: border-box;
-            height: 80px;
-            border-bottom: 1px solid #ddd;
-            padding: 5px;
-            cursor: default;
-            background-color: white;
-            overflow: hidden;
-            margin-bottom: 10px;
-        }
-
-        .item.selected {
-            border: 1px solid silver;
-        }
-
-        .item .thumb {
-            position: absolute;
-            left: 35px;
-            max-width: 90px;
-            max-height: 70px;
-        }
-        .item .label {
-            margin-left: 135px;
-        }
-
-        .item .utils input[type="number"] {
-            width: 4em;
-        }
-    </style>
+    <link rel="stylesheet" href="my-basket.css"/>
     <core-pages selected="{{page}}" flex>
         <div vertical layout>
             <div layout horizontal>
                 <core-icon-button icon="delete" on-tap="{{removeSelected}}" disabled?="{{selection.length == 0}}">Remove selected</core-icon-button>
                 <div flex></div>
-                <core-icon-button icon="arrow-forward" on-tap="{{gotoPersonalInfo}}" disabled?="{{ addCountFrom(images, basket).length == 0}}">Checkout</core-icon-button>
+                <core-icon-button icon="payment" on-tap="{{gotoDetails}}" disabled?="{{ addCountFrom(images, basket).length == 0}}">Checkout</core-icon-button>
             </div>
+            <div class="info" hidden?="{{ getKeys(basket).length > 0 }}">Your basket is empty</div>
             <core-list data="{{ images | addCountFrom(basket) }}" selection="{{selection}}" flex multi>
                 <template>
                     <div class="item {{ {selected: selected} | tokenList }}" horizontal layout center>
@@ -78,51 +39,94 @@
 
         <div vertical layout id="personalInfo">
             <div layout horizontal>
-                <core-icon-button icon="arrow-back" on-tap="{{gotoBasket}}">Back to basket</core-icon-button>
+                <core-icon-button icon="chevron-left" on-tap="{{gotoBasket}}">Back to basket</core-icon-button>
                 <div flex></div>
-                <core-icon-button icon="payment" on-tap="{{purchase}}" disabled?="{{notValidForm}}">Pay</core-icon-button>
+                <core-icon-button icon="receipt" on-tap="{{purchase}}" disabled?="{{ ! validForm}}">Pay</core-icon-button>
             </div>
-            Checkout...
+            <p>We need few information to finalize the transaction. All pictures will be sent directly to your e-mail address so make sure it is valid</p>
+            <my-imagelist class="summaryImages" urls="{{basketCopy | withoutZeros | getKeys}}"></my-imagelist>
+            <form id="detailsform" role="form" vertical layout>
+                <core-field id="form-name">
+                    <label>Name</label>
+                    <input is="core-input" type="text" maxlength="100" value="{{details.name}}" flex required on-change="{{formChanged}}"/>
+                </core-field>
+                <core-field id="form-email">
+                    <label>E-mail address</label>
+                    <input is="core-input" id="emailField" type="email" value="{{details.email}}" flex required on-change="{{validateEmail}}"/>
+                </core-field>
+                <core-field id="form-repeat-email">
+                    <label>Repeat e-mail address</label>
+                    <input is="core-input" id="repeatedEmailField" type="email" value="{{details.repeated}}" flex required on-change="{{validateEmail}}"/>
+                </core-field>
+                <core-field id="form-billing-address">
+                    <label>Billing address</label>
+                    <textarea value="{{details.address}}" required flex on-change="{{formChanged}}"></textarea>
+                <core-field>
+            </form>
         </div>
 
-        <div vertical layout id="statusPage">
-            Status
+        <div vertical layout id="successPage">
+            <div layout horizontal>
+                <core-icon-button icon="chevron-left" on-tap="{{backAction}}">Back</core-icon-button>
+            </div>
+            <p>{{details.name}}, you have just bought some photos! They will be sent to {{details.email}} imediately with the receipt.</p>
+            <my-imagelist class="summaryImages" urls="{{basketCopy | withoutZeros | getKeys}}"></my-imagelist>
         </div>
-
     </core-pages>
 </template>
 <script>
-    Polymer({ 
-        ready: function() {
-            console.log("Creating...");
-            for(var url in this.basket) {
-                console.log("   " + url + ": " + this.basket[url]);
-            }        
-        },
-        page: 0,
-        removeItem: function(e, d, s) {
-            e.stopPropagation();
-            var img = s.templateInstance.model.model;
-            this.basket = _(this.basket).omit(img.url);
-        },
-        removeSelected: function(e, d, s) {
-            var urlsToRemove = _(this.selection).pluck('url');
-            this.basket = _(this.basket).omit(function(v, url) {
-                return _(urlsToRemove).contains(url);
-            });
-        },
-        gotoBasket: function() {
-            this.page = 0;
-        },
-        gotoPersonalInfo: function() {
-            this.page = 1;
-            this.notValidForm = true;
-            console.log('Checkouting...');
-        },
-        purchase: function() {
-            this.page = 2;
-            console.log('Purchase!')
-        }
-    });
+    (function(){
+        Polymer({ 
+            details: {
+                name: '',
+                email: '',
+                repeated: '',
+                address: '',
+            },
+            page: 0,
+            observe: {
+                'details.name details.address': 'formChanged',
+                'details.email details.repeated': 'validateEmail',
+            },
+            formChanged: function() {
+                this.validForm = this.$.detailsdetails.checkValidity();
+            },
+            removeItem: function(e, d, s) {
+                e.stopPropagation();
+                var img = s.templateInstance.model.model;
+                this.basket = _(this.basket).omit(img.url);
+            },
+            removeSelected: function(e, d, s) {
+                var urlsToRemove = _(this.selection).pluck('url');
+                this.basket = _(this.basket).omit(function(v, url) {
+                    return _(urlsToRemove).contains(url);
+                });
+            },
+            gotoBasket: function() {
+                this.page = 0;
+            },
+            gotoDetails: function() {
+                this.basketCopy = _.clone(this.basket);
+                this.page = 1;
+                console.log('Checkouting...');
+            },
+            purchase: function() {
+                console.log('Purchase!')
+                // here some server communication to purchase images from basketCopy, on success
+                this.basket = {};
+                this.page = 2;
+            },
+            validateEmail: function() {
+                this.$.repeatedEmailField.setCustomValidity(this.details.email != this.details.repeated ? 'Email addresses should match!' : '');
+                this.formChanged();
+            },
+            backAction: function() {
+                this.fire('finished');
+            },
+            show: function() {
+                this.gotoBasket();
+            },
+        });
+    })();
 </script>
 </polymer-element>
