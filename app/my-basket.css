@@ -1,0 +1,70 @@
+:host {
+    display: block;
+    padding: 10px;
+    padding-bottom: 0;
+    height: 100%;
+}
+
+core-list {
+    height: 100%;
+    display:block;
+}
+
+.item {
+    position: relative;
+    box-sizing: border-box;
+    height: 80px;
+    border-bottom: 1px solid #ddd;
+    padding: 5px;
+    cursor: default;
+    background-color: white;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.item.selected {
+    border: 1px solid silver;
+}
+
+.item .thumb {
+    position: absolute;
+    left: 35px;
+    max-width: 90px;
+    max-height: 70px;
+}
+.item .label {
+    margin-left: 135px;
+}
+
+.item .utils input[type="number"] {
+    width: 4em;
+}
+
+.info {
+    text-align: center;
+    padding: 20px;
+    background: #f1f1f1;
+}
+
+#personalInfo core-field {
+    margin-bottom: 10px;
+
+}
+#personalInfo label {
+    width: 200px;
+}
+
+#personalInfo input {
+    border: 1px solid silver;
+}
+
+#personalInfo input:invalid, #personalInfo textarea:invalid {
+    box-shadow: 0 0 3px 3px rgba(255, 0, 0, 0.6);
+}
+
+.summaryImages {
+    padding-right: 5px;
+    height: 120px;
+    overflow: auto;
+}
+

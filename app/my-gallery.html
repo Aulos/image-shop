@@ -1,32 +1,22 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/core-pages/core-pages.html">
 <link rel="import" href="../bower_components/core-animated-pages/core-animated-pages.html">
 <link rel="import" href="../bower_components/core-media-query/core-media-query.html">
 <script src="../bower_components/underscore/underscore.js"></script>
 
-<polymer-element name="my-gallery" attributes="images selectedImage basket">
+<polymer-element name="my-gallery" attributes="images selectedImage basket" block>
 <template>
     <style>
         :host {
             display: block;
         }
 
-        .card, .chip, .chip-container {
-            background: white;
-            text-align: start;
-        }
-
-        .chip-container, .container, core-animated-pages {
+        .chip-container, #pages, .card {
             height: 100%;
-        }
-
-        .container {
-            height: 100%;
-            overflow: hidden;
         }
 
         .card {
             padding: 10px;
-            height: 100%;
         }
 
         .card img {
@@ -35,7 +25,7 @@
         }
 
         .chip {
-            min-height: 350px;
+            max-height: 350px;
             margin: 5px;
             border: 1px solid #444;
             overflow: hidden;
@@ -44,6 +34,11 @@
         .chip .imageAction, .chip .caption {
             background-color: #444;
             color: white;
+        }
+
+        .chip img {
+            height: auto;
+            width: auto;
         }
 
         .chip .imageAction {
@@ -63,33 +58,31 @@
 
     <core-media-query query="max-width: 700px" queryMatches="{{phoneScreen}}"></core-media-query>
 
-    <div id="container">
-        <core-animated-pages id="pages" selected="{{page}}" transitions="hero-transition">
-        
-            <div class="chip-container" layout horizontal?="{{!phoneScreen}}" wrap?="{{!phoneScreen}}" vertical?="{{phoneScreen}}">
-                <template repeat="{{image in images}}">
-                    <div class="chip" on-tap="{{showDetails}}" center relative vertical layout auto-vertical> 
-                        <img src="{{image.url}}" hero-id="{{image.url}}.art" hero?="{{selectedImage === image}}" flex>
-                        <div class="caption" self-stretch>{{image.name}}</div>
-                        <core-icon-button class="imageAction" icon="delete" on-tap="{{remove}}" hidden?="{{basket && showAction(image) != 0}}"></core-icon-button>
-                        <core-icon-button class="imageAction" icon="add-shopping-cart" on-tap="{{add}}" hidden?="{{basket && showAction(image) != 1}}"></core-icon-button>
-                    </div>
-                </template>
-            </div>
+    <core-animated-pages id="pages" selected="{{page}}" transitions="hero-transition cross-fade-all" on-core-transitioned="{{complete}}">
+    
+        <div class="chip-container" hero-p layout horizontal?="{{!phoneScreen}}" wrap?="{{!phoneScreen}}" vertical?="{{phoneScreen}}" start>
+            <template repeat="{{image in images}}">
+            <div class="chip" on-tap="{{showDetails}}" 
+                hero-id="{{image.url}}" hero?="{{selectedImage === image}}"
+                center relative vertical justified layout auto-vertical> 
+                    <img src="{{image.url}}" hero-id="{{image.url}}.art" hero?="{{selectedImage === image}}">
+                    <div class="caption" self-stretch>{{image.name}}</div>
+                    <core-icon-button class="imageAction" icon="delete" on-tap="{{remove}}" hidden?="{{basket && showAction(image) != 0}}"></core-icon-button>
+                    <core-icon-button class="imageAction" icon="add-shopping-cart" on-tap="{{add}}" hidden?="{{basket && showAction(image) != 1}}"></core-icon-button>
+                </div>
+            </template>
+        </div>
 
-            <div class="card" layout horizontal?="{{!phoneScreen}}" vertical?="{{phoneScreen}}">
-                <img src="{{selectedImage.url}}" hero hero-id="{{selectedImage.url}}.art" self-start?="{{!phoneScreen}}" auto-vertical on-tap="{{show}}"/>
-                <div flex auto-vertical><content select="div#info"></content></div>
-            </div>
-        </core-animated-pages>
-    </div>
+        <div class="card" layout horizontal?="{{!phoneScreen}}" vertical?="{{phoneScreen}}" flex hero-id="{{selectedImage.url}}" hero>
+            <img src="{{selectedImage.url}}" hero hero-id="{{selectedImage.url}}.art" self-start?="{{!phoneScreen}}" auto-vertical on-tap="{{show}}"/>
+            <div flex auto-vertical><content select="div#info"></content></div>
+        </div>
+    </core-animated-pages>
 </template>
 <script>
     Polymer({ 
         page: 0,
         selectedImage: null,
-        ready: function() {
-        },
         showAction: function(image) { return -1; },
         showDetails: function(e, d, s) {
             this.selectedImage = e.target.templateInstance.model.image;

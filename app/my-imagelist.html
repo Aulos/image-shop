@@ -1,0 +1,27 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<polymer-element name="my-imagelist" attributes="urls emptyMessage" layout horizontal wrap block>
+<template>
+<style>
+    :host {
+        padding-right: 5px;
+    }
+    img {
+        max-height: 100%;
+        margin: 5px;
+        margin-right: 0;
+    }
+</style>
+<template if="{{ emptyMessage.length > 0 && urls.length == 0 }}">{{emptyMessage}}</template>
+<template repeat="{{url in urls}}">
+    <img src="{{url}}"/>
+</template>
+</template>
+<script>
+    Polymer({ 
+        urls: [],
+        emptyMessage: "",
+    });
+</script>
+</polymer-element>
+    

@@ -89,7 +89,7 @@
                 'details.email details.repeated': 'validateEmail',
             },
             formChanged: function() {
-                this.validForm = this.$.detailsdetails.checkValidity();
+                this.validForm = this.$.detailsform.checkValidity();
             },
             removeItem: function(e, d, s) {
                 e.stopPropagation();
