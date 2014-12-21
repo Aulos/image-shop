@@ -1,11 +1,11 @@
 {
-  "name": "ScalaC Proj",
+  "name": "ImageShop",
   "version": "0.0.1",
-  "homepage": "https://github.com/Aulos/scalacproj",
+  "homepage": "https://github.com/Aulos/image-shop",
   "authors": [
     "Pawel Zubrycki <paw.zubr@gmail.com>"
   ],
-  "description": "Just a simple project",
+  "description": "Just a simple image shop",
   "license": "MIT",
   "private": true,
   "ignore": [
