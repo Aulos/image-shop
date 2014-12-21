@@ -15,7 +15,7 @@
 
 <polymer-element name="my-app" horizontal layout>
 <template>
-    <link rel="stylesheet" href="myapp.css">
+    <link rel="stylesheet" href="my-app.css">
 
     <core-localstorage id="basketstor" name="myapp-basket" value="{{basket}}" on-core-localstorage-load="{{basketLoaded}}"></core-localstorage>
     <core-scroll-threshold id="threshold" scrollTarget="{{$['main-container']}}" lowerThreshold="100" on-lower-triggered="{{loadMoreImages}}"></core-scroll-threshold>
