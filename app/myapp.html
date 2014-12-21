@@ -73,7 +73,7 @@
         Polymer('my-app', {
             page: 0,
             ready: function() {
-                this.$.gallery.showAction = _(function(image) { return this.alreadyIn(self.basket, image) ? 0 : 1; }).bind(this);
+                this.$.gallery.showAction = _(function(image) { return this.alreadyIn(this.basket, image) ? 0 : 1; }).bind(this);
             },
             toggleBasket: function() { 
                 this.page = (this.page+1) % 2;
