@@ -26,6 +26,7 @@
 
         .chip {
             max-height: 350px;
+            min-height: 300px;
             margin: 5px;
             border: 1px solid #444;
             overflow: hidden;
@@ -36,9 +37,14 @@
             color: white;
         }
 
-        .chip img {
-            height: auto;
-            width: auto;
+        @media screen and (max-width: 700px) {
+            .chip img {
+                height: 300px;
+            }
+
+            .card img {
+                max-width: 100%;
+            }
         }
 
         .chip .imageAction {
@@ -60,7 +66,7 @@
 
     <core-animated-pages id="pages" selected="{{page}}" transitions="hero-transition cross-fade-all" on-core-transitioned="{{complete}}">
     
-        <div class="chip-container" hero-p layout horizontal?="{{!phoneScreen}}" wrap?="{{!phoneScreen}}" vertical?="{{phoneScreen}}" start>
+        <div class="chip-container" hero-p layout horizontal?="{{!phoneScreen}}" wrap?="{{!phoneScreen}}" vertical?="{{phoneScreen}}" start?="{{!phoneScreen}}">
             <template repeat="{{image in images}}">
             <div class="chip" on-tap="{{showDetails}}" 
                 hero-id="{{image.url}}" hero?="{{selectedImage === image}}"
@@ -74,7 +80,7 @@
         </div>
 
         <div class="card" layout horizontal?="{{!phoneScreen}}" vertical?="{{phoneScreen}}" flex hero-id="{{selectedImage.url}}" hero>
-            <img src="{{selectedImage.url}}" hero hero-id="{{selectedImage.url}}.art" self-start?="{{!phoneScreen}}" auto-vertical on-tap="{{show}}"/>
+            <img src="{{selectedImage.url}}" hero hero-id="{{selectedImage.url}}.art" self-start?="{{!phoneScreen}}" auto-vertical on-tap="{{show}}" self-center/>
             <div flex auto-vertical><content select="div#info"></content></div>
         </div>
     </core-animated-pages>
