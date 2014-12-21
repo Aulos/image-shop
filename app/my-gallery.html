@@ -1,5 +1,4 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/core-pages/core-pages.html">
 <link rel="import" href="../bower_components/core-animated-pages/core-animated-pages.html">
 <link rel="import" href="../bower_components/core-media-query/core-media-query.html">
 <script src="../bower_components/underscore/underscore.js"></script>
@@ -80,7 +79,7 @@
         </div>
 
         <div class="card" layout horizontal?="{{!phoneScreen}}" vertical?="{{phoneScreen}}" flex hero-id="{{selectedImage.url}}" hero>
-            <img src="{{selectedImage.url}}" hero hero-id="{{selectedImage.url}}.art" self-start?="{{!phoneScreen}}" auto-vertical on-tap="{{show}}" self-center/>
+            <img src="{{selectedImage.url}}" hero hero-id="{{selectedImage.url}}.art" self-start?="{{!phoneScreen}}" auto-vertical on-tap="{{show}}" self-center?="{{phoneScreen}}"/>
             <div flex auto-vertical><content select="div#info"></content></div>
         </div>
     </core-animated-pages>
