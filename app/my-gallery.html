@@ -24,8 +24,7 @@
         }
 
         .chip {
-            max-height: 350px;
-            min-height: 300px;
+            height: 300px;
             margin: 5px;
             border: 1px solid #444;
             overflow: hidden;
@@ -37,6 +36,10 @@
         }
 
         @media screen and (max-width: 700px) {
+            .chip {
+                min-height: 300px;
+            }
+
             .chip img {
                 height: 300px;
             }
@@ -69,7 +72,7 @@
             <template repeat="{{image in images}}">
             <div class="chip" on-tap="{{showDetails}}" 
                 hero-id="{{image.url}}" hero?="{{selectedImage === image}}"
-                center relative vertical justified layout auto-vertical> 
+                center relative vertical end-justified layout auto-vertical> 
                     <img src="{{image.url}}" hero-id="{{image.url}}.art" hero?="{{selectedImage === image}}">
                     <div class="caption" self-stretch>{{image.name}}</div>
                     <core-icon-button class="imageAction" icon="delete" on-tap="{{remove}}" hidden?="{{basket && showAction(image) != 0}}"></core-icon-button>

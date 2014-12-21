@@ -4,7 +4,8 @@
 <link rel="import" href="../bower_components/core-tooltip/core-tooltip.html">
 <link rel="import" href="../bower_components/core-localstorage/core-localstorage.html">
 <link rel="import" href="../bower_components/core-pages/core-pages.html">
-<link rel="import" href="../bower_components/core-scroll-threshold/core-scroll-threshold.html">
+<link rel="import" href="../bower_components/core-media-query/core-media-query.html">
+<link rel="import" href="../bower_components/core-media-query/core-media-query.html">
 <link rel="import" href="image-service.html">
 <link rel="import" href="my-filters.html">
 <link rel="import" href="my-basket.html">
@@ -17,6 +18,7 @@
 <template>
     <link rel="stylesheet" href="my-app.css">
 
+    <core-media-query query="max-width: 700px" queryMatches="{{phoneScreen}}"></core-media-query>
     <core-localstorage id="basketstor" name="myapp-basket" value="{{basket}}" on-core-localstorage-load="{{basketLoaded}}"></core-localstorage>
     <core-scroll-threshold id="threshold" scrollTarget="{{$['main-container']}}" lowerThreshold="100" on-lower-triggered="{{loadMoreImages}}"></core-scroll-threshold>
 
@@ -24,7 +26,15 @@
 
     <div id="main-container" vertical layout flex>
         <core-toolbar>
-            <h1 flex><core-icon icon="cloud-queue" style="height: 80px; width: 80px; color: blue;" relative><core-icon icon="store" fit style="color: green; top: 25px; left: 20px; width: 40px; height: 40px;"></core-icon></core-icon> WebImageStore</h1>
+            <h1 flex>
+                <core-icon icon="cloud-queue" style="height: 80px; width: 80px; color: blue;" relative title="WebImageStore">
+                    <core-icon icon="store" fit style="color: green; top: 25px; left: 20px; width: 40px; height: 40px;">
+                    </core-icon>
+                </core-icon>
+                <span hidden?="{{phoneScreen}}">
+                    WebImageStore
+                </span>
+            </h1>
             <input type="search" value="{{filterText}}" placeholder="Filter images"/>
             <core-tooltip label="Gallery">
                 <core-icon-button icon="apps" on-tap="{{showGallery}}" active?="{{page == 0 && $.gallery.page == 0}}"></core-icon-button>
@@ -36,7 +46,7 @@
         </core-toolbar>
 
         <core-pages id="pages" selected="{{page}}" flex self-center>
-            <my-gallery id="gallery" images="{{ images | filterImages | filterName(filterText) }}" basket="{{basket}}" selectedImage="{{gallerySelected}}" 
+            <my-gallery id="gallery" images="{{ images | filterImages(basket) | filterName(filterText) }}" basket="{{basket}}" selectedImage="{{gallerySelected}}" 
                     on-action-add="{{addToBasket}}" 
                     on-action-remove="{{addToBasket}}" 
                     >
@@ -97,9 +107,7 @@
             alreadyIn: function(basket, image) {
                 return image && _(basket).has(image.url) && basket[image.url] > 0;
             },
-            clearFilterText: function() { this.filterText = ""; },
             loadMoreImages: function() {
-                console.log('a');
                 this.$.service.loadMore();
             },
             closeDetails: function() {
