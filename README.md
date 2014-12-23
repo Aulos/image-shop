@@ -3,7 +3,7 @@ ImageShop
 
 Just a simple image shop done with Polymer and WebComponents.
 
-## Instalation
+## Installation
 
 To use the project you have to first install bower components by invoking `bower install` in the main project directory.
 
