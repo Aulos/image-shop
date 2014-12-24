@@ -78,7 +78,7 @@
 <script>
     Polymer({ 
         page: 0,
-        selectedImage: null,
+        selectedImage: { url: '' },
         showAction: function(image) { return -1; },
         showDetails: function(e, d, s) {
             this.selectedImage = e.target.templateInstance.model.image;
