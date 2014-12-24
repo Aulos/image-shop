@@ -2,6 +2,7 @@
 <link rel="import" href="../bower_components/core-animated-pages/core-animated-pages.html">
 <link rel="import" href="../bower_components/core-media-query/core-media-query.html">
 <link rel="import" href="../bower_components/core-image/core-image.html">
+<link rel="import" href="../bower_components/core-tooltip/core-tooltip.html">
 
 <script src="../bower_components/underscore/underscore.js"></script>
 
@@ -58,13 +59,12 @@
     
         <div class="chip-container" hero-p layout horizontal?="{{!phoneScreen}}" wrap?="{{!phoneScreen}}" vertical?="{{phoneScreen}}"  around-justified?="{{!phoneScreen}}" flex>
             <template repeat="{{image in images}}">
-            <div class="chip" on-tap="{{showDetails}}" 
-                hero-id="{{image.url}}" hero?="{{selectedImage === image}}"
-                relative> 
-                    <core-image src="{{image.url}}" sizing="cover" hero-id="{{image.url}}.art" hero?="{{selectedImage === image}}" fit></core-image>
+                <core-tooltip class="chip" label="{{image.name}}" position="bottom" noarrow
+                    hero-id="{{image.url}}" hero?="{{selectedImage === image}}"> 
+                    <core-image src="{{image.url}}" sizing="cover" hero-id="{{image.url}}.art" hero?="{{selectedImage === image}}" fit on-tap="{{showDetails}}"></core-image>
                     <core-icon-button class="imageAction" icon="delete" on-tap="{{remove}}" hidden?="{{basket && showAction(image) != 0}}"></core-icon-button>
                     <core-icon-button class="imageAction" icon="add-shopping-cart" on-tap="{{add}}" hidden?="{{basket && showAction(image) != 1}}"></core-icon-button>
-                </div>
+                </core-tooltip>
             </template>
         </div>
 
