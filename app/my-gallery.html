@@ -1,6 +1,8 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/core-animated-pages/core-animated-pages.html">
 <link rel="import" href="../bower_components/core-media-query/core-media-query.html">
+<link rel="import" href="../bower_components/core-image/core-image.html">
+
 <script src="../bower_components/underscore/underscore.js"></script>
 
 <polymer-element name="my-gallery" attributes="images selectedImage basket" block>
@@ -18,21 +20,24 @@
             padding: 10px;
         }
 
-        .card img {
+        .card core-image {
             margin-right: 20px;
             max-width: 20%;
         }
 
         .chip {
+            min-width: 350px;
             height: 300px;
-            margin: 5px;
-            border: 1px solid #444;
-            overflow: hidden;
+            margin: 2px;
         }
 
-        .chip .imageAction, .chip .caption {
+        .chip .imageAction {
             background-color: #444;
             color: white;
+            position: absolute;
+            top: 3px;
+            right: 3px;
+            width: 40px;
         }
 
         @media screen and (max-width: 700px) {
@@ -40,49 +45,32 @@
                 min-height: 300px;
             }
 
-            .chip img {
-                height: 300px;
-            }
-
-            .card img {
+            .card core-image {
                 max-width: 100%;
+                min-height: 350px;
             }
-        }
-
-        .chip .imageAction {
-            position: absolute;
-            top: 3px;
-            right: 3px;
-            width: 40px;
-        }
-
-        .chip .caption {
-            height: 25px;
-            padding: 5px;
-            text-align: center;
-            line-height: 25px;
         }
     </style>
 
     <core-media-query query="max-width: 700px" queryMatches="{{phoneScreen}}"></core-media-query>
 
-    <core-animated-pages id="pages" selected="{{page}}" transitions="hero-transition cross-fade-all" on-core-transitioned="{{complete}}">
+    <core-animated-pages id="pages" selected="{{page}}" transitions="hero-transition cross-fade-all" on-core-transitioned="{{complete}}" horizontal layout>
     
-        <div class="chip-container" hero-p layout horizontal?="{{!phoneScreen}}" wrap?="{{!phoneScreen}}" vertical?="{{phoneScreen}}" start?="{{!phoneScreen}}">
+        <div class="chip-container" hero-p layout horizontal?="{{!phoneScreen}}" wrap?="{{!phoneScreen}}" vertical?="{{phoneScreen}}"  around-justified?="{{!phoneScreen}}" flex>
             <template repeat="{{image in images}}">
             <div class="chip" on-tap="{{showDetails}}" 
                 hero-id="{{image.url}}" hero?="{{selectedImage === image}}"
-                center relative vertical end-justified layout auto-vertical> 
-                    <img src="{{image.url}}" hero-id="{{image.url}}.art" hero?="{{selectedImage === image}}">
-                    <div class="caption" self-stretch>{{image.name}}</div>
+                relative> 
+                    <core-image src="{{image.url}}" sizing="cover" hero-id="{{image.url}}.art" hero?="{{selectedImage === image}}" fit></core-image>
                     <core-icon-button class="imageAction" icon="delete" on-tap="{{remove}}" hidden?="{{basket && showAction(image) != 0}}"></core-icon-button>
                     <core-icon-button class="imageAction" icon="add-shopping-cart" on-tap="{{add}}" hidden?="{{basket && showAction(image) != 1}}"></core-icon-button>
                 </div>
             </template>
         </div>
 
-        <div class="card" layout horizontal?="{{!phoneScreen}}" vertical?="{{phoneScreen}}" flex hero-id="{{selectedImage.url}}" hero>
-            <img src="{{selectedImage.url}}" hero hero-id="{{selectedImage.url}}.art" self-start?="{{!phoneScreen}}" auto-vertical on-tap="{{show}}" self-center?="{{phoneScreen}}"/>
+        <div class="card" layout horizontal?="{{!phoneScreen}}" vertical?="{{phoneScreen}}" hero-id="{{selectedImage.url}}" hero flex>
+            <core-image src="{{selectedImage.url}}" sizing="contain" position="top"
+                hero hero-id="{{selectedImage.url}}.art" auto-vertical on-tap="{{show}}" flex></core-image>
             <div flex auto-vertical><content select="div#info"></content></div>
         </div>
     </core-animated-pages>
