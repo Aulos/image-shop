@@ -114,6 +114,11 @@
                 console.log('close details');
                 this.$.gallery.show();
             },
+            basketLoaded: function() {
+                if(this.basket == null) {
+                    this.basket = {};
+                }
+            },
         });
     })();
 </script>
