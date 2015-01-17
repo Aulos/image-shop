@@ -1,0 +1,4 @@
+.gitignore
+*.sw[opd]
+bower_components/
+
